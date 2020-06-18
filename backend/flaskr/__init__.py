@@ -29,6 +29,11 @@ def create_app(test_config=None):
     for all available categories.
     '''
 
+    @app.route('/categories')
+    def get_all_categories():
+        try:
+            category = Category.query.all()
+
     '''
     @TODO: 
     Create an endpoint to handle GET requests for questions, 
