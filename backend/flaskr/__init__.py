@@ -16,23 +16,30 @@ def create_app(test_config=None):
 
     CORS(app, resource={'/': {'origins': '*'}})
 
-    @app.after_request(response)
+    @app.after_request
     def after_request(response):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, true')
         response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
 
         return response
 
-    '''
-    @TODO: 
-    Create an endpoint to handle GET requests 
-    for all available categories.
-    '''
 
     @app.route('/categories')
     def get_all_categories():
         try:
-            category = Category.query.all()
+            categories = Category.query.all()
+            categories_dict = {}
+            for category in categories:
+                categories_dict[category.id] = category.type
+
+            return jsonify({
+                'success': True,
+                'categories': categories_dict
+            }), 200
+        except Exception:
+            abort(500)
+
+
 
     '''
     @TODO: 
@@ -46,6 +53,14 @@ def create_app(test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions. 
     '''
+    @app.route('/questions')
+    def get_questions():
+        questions = Question.query.order_by(Question.id).all()
+        total_q = len(questions)
+        categories = Category.query.order_by(Category.id).all()
+
+
+
 
     '''
     @TODO: 
