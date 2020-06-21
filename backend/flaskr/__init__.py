@@ -9,6 +9,17 @@ from models import setup_db, Question, Category
 QUESTIONS_PER_PAGE = 10
 
 
+def pagination(request, selection):
+    page = request.args.get('page', 1, type=int)
+    start = QUESTIONS_PER_PAGE * (page - 1)
+    end = start + QUESTIONS_PER_PAGE
+
+    questions = [question.format() for question in selection]
+    current = questions[start:end]
+
+    return current
+
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
@@ -22,7 +33,6 @@ def create_app(test_config=None):
         response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
 
         return response
-
 
     @app.route('/categories')
     def get_all_categories():
@@ -39,36 +49,39 @@ def create_app(test_config=None):
         except Exception:
             abort(500)
 
-
-
-    '''
-    @TODO: 
-    Create an endpoint to handle GET requests for questions, 
-    including pagination (every 10 questions). 
-    This endpoint should return a list of questions, 
-    number of total questions, current category, categories. 
-  
-    TEST: At this point, when you start the application
-    you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
-    Clicking on the page numbers should update the questions. 
-    '''
     @app.route('/questions')
     def get_questions():
         questions = Question.query.order_by(Question.id).all()
-        total_q = len(questions)
+        current_questions = pagination(request, questions)
         categories = Category.query.order_by(Category.id).all()
 
+        categories_dict = {}
+        for category in categories:
+            categories_dict[category.id] = category.type
 
+        if len(current_questions) == 0:
+            abort(404)
 
+        return jsonify({
+            'sucess': True,
+            'total_questions': len(questions),
+            'categories': categories_dict,
+            'questions': current_questions
+        }), 200
 
-    '''
-    @TODO: 
-    Create an endpoint to DELETE question using a question ID. 
-  
-    TEST: When you click the trash icon next to a question, the question will be removed.
-    This removal will persist in the database and when you refresh the page. 
-    '''
+    @app.route('/questions/<int:id>', methods=['DELETE'])
+    def delete_question(id):
+
+        try:
+            question = Question.query.get(id)
+            question.delete()
+
+            return jsonify({
+                'success': True,
+                'message': "Question sccessfully deleted"
+            }), 200
+        except Exception:
+            abort(422)
 
     '''
     @TODO: 
@@ -81,6 +94,34 @@ def create_app(test_config=None):
     of the questions list in the "List" tab.  
     '''
 
+    @app.route('/questions', methods=['POST'])
+    def create_question():
+        data = request.get_json()
+
+        question = data.get('question', '')
+        answer = data.get('answer', '')
+        difficulty = data.get('difficulty', '')
+        category = data.get('category', '')
+
+        if question == '' or answer == '' or difficulty == '' or category == '':
+            abort(422)
+
+        try:
+            question = Question(
+                question=question,
+                answer=answer,
+                difficulty=difficulty,
+                category=category
+            )
+            question.insert()
+
+            return jsonify({
+                'success': True,
+                'message': 'Question successfully created.'
+            }), 201
+        except Exception:
+            abort(422)
+
     '''
     @TODO: 
     Create a POST endpoint to get questions based on a search term. 
@@ -91,6 +132,28 @@ def create_app(test_config=None):
     only question that include that string within their question. 
     Try using the word "title" to start. 
     '''
+
+    @app.route('/questions/search', methods=['POST'])
+    def search_questions():
+        data = request.get_json()
+        search_term = data.get('searchTerm', '')
+
+        if search_term == '':
+            abort(422)
+
+        try:
+            questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+            if len(questions):
+                abort(404)
+
+            paginated_questions = pagination(request, questions)
+            return jsonify({
+                'success': True,
+                'questions': paginated_questions,
+                'total_questions': len(Question.query.all())
+            }), 200
+        except Exception:
+            abort(404)
 
     '''
     @TODO: 
