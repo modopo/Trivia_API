@@ -24,23 +24,19 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-    
+
     def tearDown(self):
         """Executed after reach test"""
         pass
 
-    """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
-    """
-    def get_all_categories(self):
+    def test_get_all_categories(self):
         response = self.client().get('/categories')
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertEqual(data['categories'])
         self.assertEqual(len(data['categories']), 6)
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
