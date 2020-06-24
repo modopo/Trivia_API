@@ -63,7 +63,7 @@ def create_app(test_config=None):
             abort(404)
 
         return jsonify({
-            'sucess': True,
+            'success': True,
             'total_questions': len(questions),
             'categories': categories_dict,
             'questions': current_questions
@@ -78,7 +78,7 @@ def create_app(test_config=None):
 
             return jsonify({
                 'success': True,
-                'message': "Question sccessfully deleted"
+                'message': "Question successfully deleted"
             }), 200
         except Exception:
             abort(422)
@@ -153,7 +153,7 @@ def create_app(test_config=None):
             abort(422)
 
     @app.route('/quizzes', methods=['POST'])
-    def play_question():
+    def play_quiz():
 
         data = request.get_json()
         prev_question = data.get('previous_questions')
@@ -170,7 +170,7 @@ def create_app(test_config=None):
         next_question = questions[random.randint(0, len(questions) - 1)]
 
         while next_question.id in prev_question:
-            next_questions = questions[random.randint(0, len(questions) - 1)]
+            next_question = questions[random.randint(0, len(questions) - 1)]
 
         return jsonify({
             'success': True,
