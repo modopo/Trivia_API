@@ -210,7 +210,7 @@ def create_app(test_config=None):
         return jsonify({
             'success': False,
             'error': 500,
-            'message': 'An error has occured, please try again'
+            'message': 'An error has occurred, please try again'
         }), 500
 
     return app

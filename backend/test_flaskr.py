@@ -194,6 +194,7 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(data['question']['category'], 5)
 
+
 if __name__ == "__main__":
     unittest.main()
 # Make the tests conveniently executable
